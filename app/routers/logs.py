@@ -31,24 +31,28 @@ def lister_logs(
 
 @router.post("/cinema")
 def lancer_sequence_cinema(
-    entreprise_id: Optional[int] = None, 
+    entreprise_id: Optional[int] = None,
     db: Session = Depends(get_db)
 ):
     if entreprise_id is not None:
         entreprise = (
             db.query(models.Entreprise)
-            .filter(models.Entreprise.id == entreprise_id)
+            .filter(
+                models.Entreprise.id == entreprise_id,
+                models.Entreprise.statut == "analyse",
+            )
             .first()
         )
     else:
         entreprise = (
             db.query(models.Entreprise)
+            .filter(models.Entreprise.statut == "analyse")
             .order_by(models.Entreprise.id.desc())
             .first()
         )
 
     if not entreprise:
-        return {"message": "Aucune entreprise en base. Lance d'abord /seed."}
+        return {"message": "Aucune entreprise en analyse. Lance /seed ou change le statut."}
 
     lignes = [
         "Initialisation du module darknet...",
@@ -79,7 +83,6 @@ def lancer_sequence_cinema(
         return f"{m:02d}:{s:02d}"
 
     maintenant = datetime.utcnow()
-
     t = maintenant
     last_log_id = None
 
@@ -99,7 +102,7 @@ def lancer_sequence_cinema(
     for line in lignes:
         add_log(f"> {line}", "info")
 
-    for i, p in enumerate(progressions):
+    for p in progressions:
         eta = max(0, duree - int(duree * (p / 100)))
         add_log(f"> {p}%... ({taille_mo} Mo) ETA {format_duree(eta)}", "info", 0.4, 0.9)
 
@@ -112,6 +115,9 @@ def lancer_sequence_cinema(
     ]
     for line in fin:
         add_log(f"> {line}", "info", 0.4, 1.0)
+
+    entreprise.statut = "compromis"
+    add_log("> STATUS ▸ Cible hackée.", "succes", 0.15, 0.35)
 
     db.commit()
 

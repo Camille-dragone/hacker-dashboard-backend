@@ -10,7 +10,10 @@ router = APIRouter(prefix="/entreprises", tags=["Entreprises"])
 
 @router.post("", response_model=schemas.EntrepriseOut)
 def creer_entreprise(payload: schemas.EntrepriseCreate, db: Session = Depends(get_db)):
-    entreprise = models.Entreprise(**payload.model_dump())
+    data = payload.model_dump()
+    data["statut"] = payload.statut.value
+
+    entreprise = models.Entreprise(**data)
     db.add(entreprise)
     db.commit()
     db.refresh(entreprise)
@@ -74,7 +77,7 @@ def modifier_entreprise(
     entreprise.pays = payload.pays
     entreprise.acces = payload.acces
     entreprise.vulnerabilite = payload.vulnerabilite
-    entreprise.statut = payload.statut
+    entreprise.statut = payload.statut.value
 
     db.commit()
     db.refresh(entreprise)
@@ -114,7 +117,7 @@ def logs_par_entreprise(entreprise_id: int, db: Session = Depends(get_db)):
     return (
         db.query(models.Log)
         .filter(models.Log.entreprise_id == entreprise_id)
-        .order_by(models.Log.created_at.desc(), models.Log.id.desc())
+        .order_by(models.Log.created_at.asc(), models.Log.id.asc())
         .limit(200)
         .all()
     )

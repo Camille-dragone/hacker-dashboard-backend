@@ -31,6 +31,6 @@ def home():
     return {"message": "API Hacker active 😈"}
 
 @app.post("/seed")
-def seed_database(nb: int = 50, db: Session = Depends(get_db)):
+def seed_database(nb: int = 100, db: Session = Depends(get_db)):
     generer_entreprises(db, nb)
     return {"message": f"{nb} entreprises fictives créées"}

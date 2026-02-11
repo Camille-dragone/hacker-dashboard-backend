@@ -66,7 +66,11 @@ def generer_entreprises(db: Session, nb: int = 50):
             pays=fake.country(),
             acces=random.choice(ACCES),
             vulnerabilite=random.choice(VULNERABILITES),
-            statut=random.choice(STATUTS),
+            statut=random.choices(
+                ["compromis", "analyse", "securise"],
+                weights=[60, 30, 10],
+                k=1
+            )[0],
             created_at=created_at
         )
         db.add(e)
