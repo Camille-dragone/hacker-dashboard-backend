@@ -1,0 +1,13 @@
+venv/
+env/
+
+__pycache__/
+*.pyc
+
+hacker.db
+
+.env
+
+.vscode/
+
+.DS_Store
